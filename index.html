@@ -362,6 +362,8 @@ const nivelesGimnasiaList = [
             
             const [editingEvent, setEditingEvent] = useState(null);
             const [editingWOD, setEditingWOD] = useState(null);
+            const [popupEvent, setPopupEvent] = useState(null);
+            
 
             // ==========================================
             // CONTROL DE SESIÓN FIREBASE (CORREGIDO)
@@ -478,6 +480,7 @@ const nivelesGimnasiaList = [
                 }
                 setDataLoading(false);
             };
+            
 
             // ==========================================
             // FUNCIONES DE LOGIN (CORREGIDO PARA MOVILES)
@@ -686,6 +689,7 @@ const handleActualizarSkillsClick = () => {
                 e.preventDefault(); setLoading(true); setErrorMsg(''); setSuccessMsg('');
                 const formData = new FormData(e.target);
                 const data = Object.fromEntries(formData.entries());
+                data.Destacado = formData.get('Destacado') ? 'SI' : '';
                 const res = await apiCall('addEvento', data);
                 if (res.status === 'success') {
                     setSuccessMsg('Evento publicado correctamente.');
@@ -714,6 +718,7 @@ const handleActualizarSkillsClick = () => {
                 e.preventDefault(); setLoading(true); setErrorMsg(''); setSuccessMsg('');
                 const formData = new FormData(e.target);
                 const data = Object.fromEntries(formData.entries());
+                data.Destacado = formData.get('Destacado') ? 'SI' : '';
                 const res = await apiCall('updateEvento', { rowIndex: editingEvent._rowIndex, data });
                 if (res.status === 'success') {
                     setSuccessMsg('Evento actualizado correctamente.');
@@ -1422,8 +1427,12 @@ const handleActualizarSkillsClick = () => {
                                                 <div><label className="block text-[10px] font-black uppercase mb-1 ml-1 text-brand-dark">Hora</label><input type="time" name="Hora" defaultValue={editingEvent ? getProp(editingEvent, 'Hora') : ''} className="w-full p-3 rounded-xl bg-white/60 focus:bg-white outline-none font-bold text-brand-dark shadow-sm" /></div>
                                             </div>
                                             <div><label className="block text-[10px] font-black uppercase mb-1 ml-1 text-brand-dark">Punto de Encuentro</label><input type="text" name="PuntoEncuentro" defaultValue={editingEvent ? getProp(editingEvent, 'Punto de Encuentro') : ''} className="w-full p-3 rounded-xl bg-white/60 focus:bg-white outline-none font-bold text-brand-dark shadow-sm" /></div>
-                                            <div><label className="block text-[10px] font-black uppercase mb-1 ml-1 text-brand-dark">URL de Imagen (Opcional)</label><input type="url" name="URL_Imagen" defaultValue={editingEvent ? getProp(editingEvent, 'URL_Imagen') : ''} placeholder="https://..." className="w-full p-3 rounded-xl bg-white/60 focus:bg-white outline-none font-bold text-brand-dark shadow-sm text-xs" /></div>
-                                            <div><label className="block text-[10px] font-black uppercase mb-1 ml-1 text-brand-dark">Descripción</label><textarea name="Descripcion" defaultValue={editingEvent ? getProp(editingEvent, 'Descripcion') : ''} required rows="4" className="w-full p-3 rounded-xl bg-white/60 focus:bg-white outline-none font-bold text-brand-dark shadow-sm"></textarea></div>
+                                            <div>
+                                                <label className="flex items-center gap-2 text-[10px] font-black uppercase mb-1 ml-1 text-brand-dark cursor-pointer bg-white/60 p-3 rounded-xl shadow-sm border border-brand-dark/10">
+                                                    <input type="checkbox" name="Destacado" value="SI" defaultChecked={editingEvent && getProp(editingEvent, 'Destacado') === 'SI'} className="w-5 h-5 accent-brand-dark" />
+                                                    Mostrar como Pop-up al inicio
+                                                </label>
+                                            </div>
                                             <button type="submit" disabled={loading} className="w-full bg-brand-dark text-brand-bg1 p-4 rounded-xl font-black uppercase shadow-xl hover:scale-105 transition-transform">{loading ? 'Procesando...' : (editingEvent ? 'Guardar Cambios' : 'Publicar Evento')}</button>
                                         </form>
 
