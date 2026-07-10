@@ -202,7 +202,7 @@ const nivelesGimnasiaList = [
 
         const defaultSkills = {};
         movimientosGimnasia.forEach(m => defaultSkills[m] = 'verde'); // Base es verde ahora
-        movimientosGimnasiaPlana.forEach(m => defaultSkills[m] = 0);
+        movimientosGimnasiaPlana.forEach(m => defaultSkills[m] = false);
         familiasLevantamiento.forEach(fam => {
             fam.movimientos.forEach(m => defaultSkills[m] = 0);
         });
@@ -550,10 +550,11 @@ const handleActualizarSkillsClick = () => {
                     let nIdx = gimLevels.indexOf(nv);
                     let oIdx = ov ? gimLevels.indexOf(ov) : 0;
                     if (nIdx > oIdx) hasImprovements = true;
+                } else if (typeof nv === 'boolean') { // NUEVO: Si es un logro de gimnasia plana
+                    if (nv === true && !ov) hasImprovements = true;
                 } else if (!isNaN(nv)) {
                     let nVal = Number(nv);
                     let oVal = Number(ov) || 0;
-                    // Solo verificamos si hay una mejora numérica, el backend decide si alcanza el umbral de puntos
                     if (nVal > oVal) hasImprovements = true;
                 }
             }
@@ -1047,29 +1048,35 @@ const handleActualizarSkillsClick = () => {
                                         <div className="space-y-4 animate-fade-in">
                                             <div className="flex items-center gap-2 mb-2">
                                                 <Target className="w-6 h-6 text-brand-dark"/>
-                                                <h3 className="font-black text-xl uppercase tracking-wider text-brand-dark">Gimnasia (Reps / Logros)</h3>
+                                                <h3 className="font-black text-xl uppercase tracking-wider text-brand-dark">Gimnasia (Logros)</h3>
                                             </div>
-                                            <p className="text-[10px] font-bold text-brand-dark/60 bg-white/50 p-3 rounded-xl leading-tight">Registra aquí tus récords numéricos en movimientos de gimnasia.</p>
+                                            <p className="text-[10px] font-bold text-brand-dark/60 bg-white/50 p-3 rounded-xl leading-tight">Marca los movimientos que ya dominas. Requerirá evidencia para sumar los puntos a tu perfil.</p>
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                                                 {movimientosGimnasiaPlana.map((mov, idx) => {
+                                                    const isMastered = userSkills[mov] === true;
+                                                    const isOfficial = maxSkills[mov] === true;
+                                                    const isPending = pendingSkills[mov] === true && !isOfficial;
+
                                                     return (
                                                         <div key={idx} className="bg-white/60 p-4 rounded-2xl border border-brand-dark/10 flex items-center justify-between gap-3 shadow-sm hover:bg-white/80 transition-colors flex-wrap">
                                                             <div className="flex flex-col flex-1 items-start">
                                                                 <h4 className="font-black text-xs text-brand-dark uppercase tracking-wider leading-tight">{mov}</h4>
                                                                 <span className="text-[9px] font-black text-brand-dark/40 uppercase mt-0.5 mb-1 flex items-center gap-1">
-                                                                    PR Oficial: <strong className={`${maxSkills[mov] > 0 ? 'text-brand-bg1 bg-brand-dark px-1.5 py-0.5 rounded shadow-sm' : ''}`}>{maxSkills[mov] || 0} Reps</strong>
+                                                                    Estado Oficial: <strong className={`${isOfficial ? 'text-green-700 bg-green-100 border border-green-200 px-1.5 py-0.5 rounded shadow-sm' : ''}`}>{isOfficial ? 'DOMINADO' : 'PENDIENTE'}</strong>
                                                                 </span>
-                                                                {pendingSkills[mov] > (maxSkills[mov] || 0) && (
+                                                                {isPending && (
                                                                     <span className="text-[8px] font-black uppercase tracking-widest text-orange-700 bg-orange-100 px-2 py-0.5 rounded border border-orange-200 flex items-center gap-1 shadow-sm mt-1">
-                                                                        <Clock className="w-2.5 h-2.5"/> En validación: {pendingSkills[mov]} Reps
+                                                                        <Clock className="w-2.5 h-2.5"/> En validación
                                                                     </span>
                                                                 )}
                                                             </div>
-                                                            <div className="flex items-center gap-1 w-24 sm:w-28 bg-white p-1 rounded-xl border border-brand-dark/20 focus-within:border-brand-dark/60 transition-colors shadow-inner shrink-0">
-                                                                <input type="number" placeholder="0" value={userSkills[mov] !== undefined ? userSkills[mov] : ''} onChange={(e) => handleSkillUpdate(mov, e.target.value)} className="w-full p-2 bg-transparent outline-none font-black text-center text-brand-dark text-lg sm:text-xl" />
-                                                                <span className="text-[8px] font-black uppercase text-brand-dark/50 pr-2">REPS</span>
-                                                            </div>
+                                                            <button 
+                                                                onClick={() => { if (!isOfficial) handleSkillUpdate(mov, !isMastered) }}
+                                                                disabled={isOfficial}
+                                                                className={`flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl font-black text-[10px] uppercase transition-all shadow-sm shrink-0 border ${isOfficial ? 'bg-green-100 text-green-700 border-green-200 opacity-50 cursor-not-allowed' : isMastered ? 'bg-green-500 text-white border-green-600 shadow-md hover:bg-green-600' : 'bg-white text-brand-dark/50 border-brand-dark/20 hover:border-brand-dark/50'}`}>
+                                                                {isMastered || isOfficial ? <><CheckCircle className="w-4 h-4"/> Logrado</> : 'Marcar Logro'}
+                                                            </button>
                                                         </div>
                                                     );
                                                 })}
