@@ -1361,7 +1361,7 @@ const handleActualizarSkillsClick = () => {
                                 </div>
                                 {dataLoading ? <div className="text-center py-10 font-bold animate-pulse text-brand-dark/50">Cargando datos...</div> : (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                                        {blogPosts?.map((post, idx) => {
+                                        {[...blogPosts].sort((a, b) => new Date(getProp(b, 'Fecha')) - new Date(getProp(a, 'Fecha'))).map((post, idx) => {
                                             if(!post) return null;
                                             const urlImg = getDirectImageUrl(getProp(post, 'URL_Imagen'));
                                             return (
