@@ -55,7 +55,7 @@
         // ==========================================
         // URL DE APPS SCRIPT
         // ==========================================
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzQsr0FhtIt74XNrUMmlsldU05BCZNagm0AMYyR1fmDLBLcV8007Z_43x1xhZIwWOxq/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWG4KHIgj8uDjQ3MI2JyhkUmLCMrQxL2odrfzIU7NZizV4nBUaeeKx6xWFYYsgP85D/exec";
 
         const Icons = {
             ElementaLogo: (p) => <img src="https://lh3.googleusercontent.com/d/1CDtlPBzeohniETytbfVOI43VMmk_vQTn" alt="Elementa Logo" {...p} />,
@@ -160,32 +160,53 @@
             'Aprobado.'
         ];
 
-        const nivelesGimnasiaList = [
-            { nivel: 'Nivel 1', color: 'azul', label: 'Banda Azul' },
-            { nivel: 'Nivel 2', color: 'verde', label: 'Banda Verde' },
-            { nivel: 'Nivel 3', color: 'morada', label: 'Banda Morada' },
-            { nivel: 'Nivel 4', color: 'negra', label: 'Banda Negra' },
-            { nivel: 'Nivel 5', color: 'roja', label: 'Banda Roja' },
-            { nivel: 'Nivel 6', color: 'sin', label: 'Sin Banda' },
+const nivelesGimnasiaList = [
+            { nivel: 'Nivel 1', color: 'verde', label: 'Banda Verde' },
+            { nivel: 'Nivel 2', color: 'morada', label: 'Banda Morada' },
+            { nivel: 'Nivel 3', color: 'negra', label: 'Banda Negra' },
+            { nivel: 'Nivel 4', color: 'roja', label: 'Banda Roja' },
+            { nivel: 'Nivel 5', color: 'sin', label: 'Sin Banda' },
         ];
 
+        // Gimnasia con bandas (Columna A)
         const movimientosGimnasia = [
-            'PULL UPS', 'KIPPING PULL UP', 'BUTTERFLY PULL UP', 'CHEST TO BAR', 
-            'BUTTERFLY CHEST TO BAR', 'EXPLOSIVE PULL UP', 'HIGH PULL UP', 
-            'KIPPING MUSCLE UP', 'BUTTERFLY MUSCLE UP', 'STRICT MUSCLE UP'
-        ];
-        
-        const movimientosLevantamiento = [
-            'Snatch', 'Hang Power Snatch', 'Power Snatch', 'Hang Squat Snatch', 
-            'Full Snatch (Squat Snatch)', 'Clean & Jerk'
+            'STRICT PULL UPS', 'KIPPING PULL UPS', 'BUTTERFLY PULL UPS', 
+            'STRICT CHEST TO BAR', 'KIPPING CHEST TO BAR', 'BUTTERFLY CHEST TO BAR', 
+            'STRICT RING MUSCLE UPS', 'STRICT BAR MUSCLE UPS', 'BAR MUSCLE UPS'
         ];
 
-        const gimLevels = ['azul', 'verde', 'morada', 'negra', 'roja', 'sin'];
+        // Gimnasia Plana (Columna Q - Nuevos)
+        const movimientosGimnasiaPlana = [
+            'HAND STAND PUSH UPS', 'DEFICIT HAND STAND PUSH UPS', 'STRICT HAND STAND PUSH UPS',
+            'HANN STAND WALK', 'PIROUETTE HANDSTAND WALK', 'SINGLE UNDERS', 
+            'SINGLE UNDERS CROSSOVER', 'DOUBLE UNDERS', 'DOUBLE UNDERS CROSSOVER'
+        ];
+
+        // Levantamientos agrupados por familia (Punto 3 de tus requerimientos)
+        const familiasLevantamiento = [
+            {
+                nombre: 'SNATCH',
+                movimientos: ['SQUAT SNATCH', 'HANG SQUAT SNATCH', 'HIGH HANG SQUAT SNATCH', 'POWER SNATCH', 'HANG POWER SNATCH', 'HIGH HANG POWER SNATCH']
+            },
+            {
+                nombre: 'JERK',
+                movimientos: ['CLEAN AND JERK', 'SPLIT JERK', 'PUSH JERK', 'PUSH PRESS']
+            },
+            {
+                nombre: 'CLEAN',
+                movimientos: ['SQUAT CLEAN', 'HANG SQUAT CLEAN', 'HIGH HANG SQUAT CLEAN', 'POWER CLEAN', 'HANG POWER CLEAN', 'HIGH HANG POWER CLEAN']
+            }
+        ];
+
+        const gimLevels = ['verde', 'morada', 'negra', 'roja', 'sin'];
 
         const defaultSkills = {};
-        movimientosGimnasia.forEach(m => defaultSkills[m] = 'azul');
-        movimientosLevantamiento.forEach(m => defaultSkills[m] = 0);
-
+        movimientosGimnasia.forEach(m => defaultSkills[m] = 'verde'); // Base es verde ahora
+        movimientosGimnasiaPlana.forEach(m => defaultSkills[m] = false);
+        familiasLevantamiento.forEach(fam => {
+            fam.movimientos.forEach(m => defaultSkills[m] = 0);
+        });
+        
         const getProp = (obj, propName) => {
             if (!obj) return undefined;
             const key = Object.keys(obj).find(k => k.trim().toLowerCase() === propName.trim().toLowerCase());
@@ -341,6 +362,8 @@
             
             const [editingEvent, setEditingEvent] = useState(null);
             const [editingWOD, setEditingWOD] = useState(null);
+            const [popupEvent, setPopupEvent] = useState(null);
+            
 
             // ==========================================
             // CONTROL DE SESIÓN FIREBASE (CORREGIDO)
@@ -432,7 +455,7 @@
                     let uiSkills = { ...loadedSkills };
                     for(let mov in pendientes) {
                         if (gimLevels.includes(pendientes[mov])) {
-                            if (gimLevels.indexOf(pendientes[mov]) > gimLevels.indexOf(uiSkills[mov] || 'azul')) {
+                            if (gimLevels.indexOf(pendientes[mov]) > gimLevels.indexOf(uiSkills[mov] || 'verde')) {
                                 uiSkills[mov] = pendientes[mov];
                             }
                         } else if (!isNaN(pendientes[mov])) {
@@ -457,6 +480,7 @@
                 }
                 setDataLoading(false);
             };
+            
 
             // ==========================================
             // FUNCIONES DE LOGIN (CORREGIDO PARA MOVILES)
@@ -520,29 +544,30 @@
 
             const handleNavigation = (view) => { setCurrentView(view); window.scrollTo(0, 0); };
 
-            const handleActualizarSkillsClick = () => {
-                let hasImprovements = false;
-                
-                for (let mov in userSkills) {
-                    let nv = userSkills[mov];
-                    let ov = maxSkills[mov];
-                    if (gimLevels.includes(nv)) {
-                        let nIdx = gimLevels.indexOf(nv);
-                        let oIdx = ov ? gimLevels.indexOf(ov) : 0;
-                        if (nIdx > oIdx) hasImprovements = true;
-                    } else if (!isNaN(nv)) {
-                        let nVal = Number(nv);
-                        let oVal = Number(ov) || 0;
-                        if (nVal - oVal >= 5) hasImprovements = true;
-                    }
+const handleActualizarSkillsClick = () => {
+            let hasImprovements = false;
+            for (let mov in userSkills) {
+                let nv = userSkills[mov];
+                let ov = maxSkills[mov];
+                if (gimLevels.includes(nv)) {
+                    let nIdx = gimLevels.indexOf(nv);
+                    let oIdx = ov ? gimLevels.indexOf(ov) : 0;
+                    if (nIdx > oIdx) hasImprovements = true;
+                } else if (typeof nv === 'boolean') { // NUEVO: Si es un logro de gimnasia plana
+                    if (nv === true && !ov) hasImprovements = true;
+                } else if (!isNaN(nv)) {
+                    let nVal = Number(nv);
+                    let oVal = Number(ov) || 0;
+                    if (nVal > oVal) hasImprovements = true;
                 }
+            }
 
-                if (hasImprovements) {
-                    setUploadingReto({ Titulo: 'Validación de Nuevas Marcas (PR/Niveles)', Puntos: 'Por Calcular', isSkillUpdate: true });
-                } else {
-                    handleSaveSkillsSilently();
-                }
-            };
+            if (hasImprovements) {
+                setUploadingReto({ Titulo: 'Validación de Nuevas Marcas', Puntos: 'Por Calcular', isSkillUpdate: true });
+            } else {
+                handleSaveSkillsSilently();
+            }
+        };
 
             const handleSaveSkillsSilently = async () => {
                 setLoading(true); setErrorMsg(''); setSuccessMsg('');
@@ -664,6 +689,7 @@
                 e.preventDefault(); setLoading(true); setErrorMsg(''); setSuccessMsg('');
                 const formData = new FormData(e.target);
                 const data = Object.fromEntries(formData.entries());
+                data.Destacado = formData.get('Destacado') ? 'SI' : '';
                 const res = await apiCall('addEvento', data);
                 if (res.status === 'success') {
                     setSuccessMsg('Evento publicado correctamente.');
@@ -692,6 +718,7 @@
                 e.preventDefault(); setLoading(true); setErrorMsg(''); setSuccessMsg('');
                 const formData = new FormData(e.target);
                 const data = Object.fromEntries(formData.entries());
+                data.Destacado = formData.get('Destacado') ? 'SI' : '';
                 const res = await apiCall('updateEvento', { rowIndex: editingEvent._rowIndex, data });
                 if (res.status === 'success') {
                     setSuccessMsg('Evento actualizado correctamente.');
@@ -953,16 +980,18 @@
                                 {successMsg && <div className="bg-green-500 text-white p-3 rounded-xl text-sm font-bold text-center shadow-lg animate-pulse">{successMsg}</div>}
 
                                 <div className="flex gap-2 overflow-x-auto hide-scroll pb-2 mt-4">
-                                    <button onClick={() => setSkillTab('gimnasia')} className={`flex-1 py-3 rounded-xl font-black uppercase text-sm transition-all shadow-sm ${skillTab === 'gimnasia' ? 'bg-brand-dark text-brand-bg1' : 'bg-white/50 text-brand-dark hover:bg-white border border-brand-dark/5'}`}>Gimnasia</button>
-                                    <button onClick={() => setSkillTab('levantamientos')} className={`flex-1 py-3 rounded-xl font-black uppercase text-sm transition-all shadow-sm ${skillTab === 'levantamientos' ? 'bg-brand-dark text-brand-bg1' : 'bg-white/50 text-brand-dark hover:bg-white border border-brand-dark/5'}`}>Levantamientos</button>
+                                    <button onClick={() => setSkillTab('gimnasia')} className={`flex-1 py-3 rounded-xl font-black uppercase text-[11px] sm:text-sm transition-all shadow-sm whitespace-nowrap px-2 ${skillTab === 'gimnasia' ? 'bg-brand-dark text-brand-bg1' : 'bg-white/50 text-brand-dark hover:bg-white border border-brand-dark/5'}`}>Gimnasia (Bandas)</button>
+                                    <button onClick={() => setSkillTab('gimnasiaPlana')} className={`flex-1 py-3 rounded-xl font-black uppercase text-[11px] sm:text-sm transition-all shadow-sm whitespace-nowrap px-2 ${skillTab === 'gimnasiaPlana' ? 'bg-brand-dark text-brand-bg1' : 'bg-white/50 text-brand-dark hover:bg-white border border-brand-dark/5'}`}>Movimientos Especiales</button>
+                                    <button onClick={() => setSkillTab('levantamientos')} className={`flex-1 py-3 rounded-xl font-black uppercase text-[11px] sm:text-sm transition-all shadow-sm whitespace-nowrap px-2 ${skillTab === 'levantamientos' ? 'bg-brand-dark text-brand-bg1' : 'bg-white/50 text-brand-dark hover:bg-white border border-brand-dark/5'}`}>Levantamientos</button>
                                 </div>
 
                                 <div className="glass-card rounded-[1.5rem] p-4 sm:p-6 border border-white/40 shadow-sm mt-2 mb-6">
+                    
                                     {skillTab === 'gimnasia' && (
                                         <div className="space-y-4 animate-fade-in">
                                             <div className="flex items-center gap-2 mb-2">
                                                 <Target className="w-6 h-6 text-brand-dark"/>
-                                                <h3 className="font-black text-xl uppercase tracking-wider text-brand-dark">Gimnasia</h3>
+                                                <h3 className="font-black text-xl uppercase tracking-wider text-brand-dark">Gimnasia (Bandas)</h3>
                                             </div>
                                             <p className="text-[10px] font-bold text-brand-dark/60 bg-white/50 p-3 rounded-xl leading-tight">Tu récord oficial es la base. Si solicitas validar una banda de mayor dificultad, requerirá evidencia en foto o video.</p>
                                             
@@ -979,10 +1008,10 @@
                                                             <div className="flex justify-between items-start">
                                                                 <h4 className="font-black text-xs text-brand-dark uppercase tracking-wider">{mov}</h4>
                                                                 <div className="flex flex-col items-end gap-1 max-w-[60%] text-right">
-                                                                    {maxSkills[mov] && maxSkills[mov] !== 'azul' && (
-                                                                        <span className="text-[8px] font-black uppercase tracking-widest text-brand-dark/40 bg-black/5 px-2 py-0.5 rounded">PR Oficial: {nivelesGimnasiaList.find(n => n.color === maxSkills[mov])?.label || 'Banda Azul'}</span>
+                                                                    {maxSkills[mov] && maxSkills[mov] !== 'verde' && (
+                                                                        <span className="text-[8px] font-black uppercase tracking-widest text-brand-dark/40 bg-black/5 px-2 py-0.5 rounded">PR Oficial: {nivelesGimnasiaList.find(n => n.color === maxSkills[mov])?.label || 'Banda Verde'}</span>
                                                                     )}
-                                                                    {pendingSkills[mov] && gimLevels.indexOf(pendingSkills[mov]) > gimLevels.indexOf(maxSkills[mov] || 'azul') && (
+                                                                    {pendingSkills[mov] && gimLevels.indexOf(pendingSkills[mov]) > gimLevels.indexOf(maxSkills[mov] || 'verde') && (
                                                                         <span className="text-[8px] font-black uppercase tracking-widest text-orange-700 bg-orange-100 px-2 py-0.5 rounded border border-orange-200 flex items-center gap-1 shadow-sm leading-tight">
                                                                             <Clock className="w-2.5 h-2.5 shrink-0"/> En validación: {nivelesGimnasiaList.find(n => n.color === pendingSkills[mov])?.label}
                                                                         </span>
@@ -993,7 +1022,6 @@
                                                                 {nivelesGimnasiaList.map((nv) => {
                                                                     const isActive = userSkills[mov] === nv.color;
                                                                     const isMaxOfficial = maxSkills[mov] === nv.color;
-                                                                    
                                                                     let btnClass = "w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all duration-300 relative group flex items-center justify-center ";
                                                                     
                                                                     if (isMaxOfficial) {
@@ -1005,12 +1033,7 @@
                                                                     }
 
                                                                     return (
-                                                                        <button 
-                                                                            key={nv.color}
-                                                                            onClick={() => handleSkillUpdate(mov, nv.color)}
-                                                                            className={btnClass}
-                                                                            title={`${nv.nivel}: ${nv.label}`}
-                                                                        >
+                                                                        <button key={nv.color} onClick={() => handleSkillUpdate(mov, nv.color)} className={btnClass} title={`${nv.nivel}: ${nv.label}`}>
                                                                             {isActive && <CheckCircle className={`w-4 h-4 drop-shadow-md z-20 absolute ${isMaxOfficial ? 'text-white' : `text-${nv.color}-600`}`}/>}
                                                                         </button>
                                                                     );
@@ -1025,40 +1048,40 @@
                                             </div>
                                         </div>
                                     )}
-                                    
-                                    {skillTab === 'levantamientos' && (
+
+                                    {skillTab === 'gimnasiaPlana' && (
                                         <div className="space-y-4 animate-fade-in">
                                             <div className="flex items-center gap-2 mb-2">
-                                                <Dumbbell className="w-6 h-6 text-brand-dark"/>
-                                                <h3 className="font-black text-xl uppercase tracking-wider text-brand-dark">Levantamientos</h3>
+                                                <Target className="w-6 h-6 text-brand-dark"/>
+                                                <h3 className="font-black text-xl uppercase tracking-wider text-brand-dark">Movimientos Especiales</h3>
                                             </div>
-                                            <p className="text-[10px] font-bold text-brand-dark/60 bg-white/50 p-3 rounded-xl leading-tight">Si rompes tu PR oficial (+5lb o más), solicita validación para tus puntos subiendo tu video aquí.</p>
+                                            <p className="text-[10px] font-bold text-brand-dark/60 bg-white/50 p-3 rounded-xl leading-tight">Marca los movimientos que ya dominas. Requerirá evidencia para sumar los puntos a tu perfil.</p>
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                                                {movimientosLevantamiento.map((mov, idx) => {
+                                                {movimientosGimnasiaPlana.map((mov, idx) => {
+                                                    const isMastered = userSkills[mov] === true;
+                                                    const isOfficial = maxSkills[mov] === true;
+                                                    const isPending = pendingSkills[mov] === true && !isOfficial;
+
                                                     return (
                                                         <div key={idx} className="bg-white/60 p-4 rounded-2xl border border-brand-dark/10 flex items-center justify-between gap-3 shadow-sm hover:bg-white/80 transition-colors flex-wrap">
                                                             <div className="flex flex-col flex-1 items-start">
                                                                 <h4 className="font-black text-xs text-brand-dark uppercase tracking-wider leading-tight">{mov}</h4>
                                                                 <span className="text-[9px] font-black text-brand-dark/40 uppercase mt-0.5 mb-1 flex items-center gap-1">
-                                                                    PR Oficial: <strong className={`${maxSkills[mov] > 0 ? 'text-brand-bg1 bg-brand-dark px-1.5 py-0.5 rounded shadow-sm' : ''}`}>{maxSkills[mov] || 0} LBS</strong>
+                                                                    Estado Oficial: <strong className={`${isOfficial ? 'text-green-700 bg-green-100 border border-green-200 px-1.5 py-0.5 rounded shadow-sm' : ''}`}>{isOfficial ? 'DOMINADO' : 'PENDIENTE'}</strong>
                                                                 </span>
-                                                                {pendingSkills[mov] > (maxSkills[mov] || 0) && (
+                                                                {isPending && (
                                                                     <span className="text-[8px] font-black uppercase tracking-widest text-orange-700 bg-orange-100 px-2 py-0.5 rounded border border-orange-200 flex items-center gap-1 shadow-sm mt-1">
-                                                                        <Clock className="w-2.5 h-2.5"/> En validación: {pendingSkills[mov]} LBS
+                                                                        <Clock className="w-2.5 h-2.5"/> En validación
                                                                     </span>
                                                                 )}
                                                             </div>
-                                                            <div className="flex items-center gap-1 w-24 sm:w-28 bg-white p-1 rounded-xl border border-brand-dark/20 focus-within:border-brand-dark/60 transition-colors shadow-inner shrink-0">
-                                                                <input 
-                                                                    type="number" 
-                                                                    placeholder="0" 
-                                                                    value={userSkills[mov] !== undefined ? userSkills[mov] : ''}
-                                                                    onChange={(e) => handleSkillUpdate(mov, e.target.value)}
-                                                                    className="w-full p-2 bg-transparent outline-none font-black text-center text-brand-dark text-lg sm:text-xl" 
-                                                                />
-                                                                <span className="text-[8px] font-black uppercase text-brand-dark/50 pr-2">LBS</span>
-                                                            </div>
+                                                            <button 
+                                                                onClick={() => { if (!isOfficial) handleSkillUpdate(mov, !isMastered) }}
+                                                                disabled={isOfficial}
+                                                                className={`flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl font-black text-[10px] uppercase transition-all shadow-sm shrink-0 border ${isOfficial ? 'bg-green-100 text-green-700 border-green-200 opacity-50 cursor-not-allowed' : isMastered ? 'bg-green-500 text-white border-green-600 shadow-md hover:bg-green-600' : 'bg-white text-brand-dark/50 border-brand-dark/20 hover:border-brand-dark/50'}`}>
+                                                                {isMastered || isOfficial ? <><CheckCircle className="w-4 h-4"/> Logrado</> : 'Marcar Logro'}
+                                                            </button>
                                                         </div>
                                                     );
                                                 })}
@@ -1066,6 +1089,44 @@
                                         </div>
                                     )}
                                     
+                                    {skillTab === 'levantamientos' && (
+                                        <div className="space-y-4 animate-fade-in">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <Dumbbell className="w-6 h-6 text-brand-dark"/>
+                                                <h3 className="font-black text-xl uppercase tracking-wider text-brand-dark">Levantamientos</h3>
+                                            </div>
+                                            <p className="text-[10px] font-bold text-brand-dark/60 bg-white/50 p-3 rounded-xl leading-tight">Si rompes tu PR oficial, solicita validación para tus puntos subiendo tu video aquí.</p>
+
+                                            {familiasLevantamiento.map((familia, fIdx) => (
+                                                <div key={fIdx} className="mb-6 last:mb-0">
+                                                    <h4 className="font-black text-brand-dark uppercase border-b-2 border-brand-dark/10 pb-1 mb-3 text-sm">{familia.nombre}</h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                                                        {familia.movimientos.map((mov, idx) => {
+                                                            return (
+                                                                <div key={idx} className="bg-white/60 p-4 rounded-2xl border border-brand-dark/10 flex items-center justify-between gap-3 shadow-sm hover:bg-white/80 transition-colors flex-wrap">
+                                                                    <div className="flex flex-col flex-1 items-start">
+                                                                        <h4 className="font-black text-xs text-brand-dark uppercase tracking-wider leading-tight">{mov}</h4>
+                                                                        <span className="text-[9px] font-black text-brand-dark/40 uppercase mt-0.5 mb-1 flex items-center gap-1">
+                                                                            PR Oficial: <strong className={`${maxSkills[mov] > 0 ? 'text-brand-bg1 bg-brand-dark px-1.5 py-0.5 rounded shadow-sm' : ''}`}>{maxSkills[mov] || 0} LBS</strong>
+                                                                        </span>
+                                                                        {pendingSkills[mov] > (maxSkills[mov] || 0) && (
+                                                                            <span className="text-[8px] font-black uppercase tracking-widest text-orange-700 bg-orange-100 px-2 py-0.5 rounded border border-orange-200 flex items-center gap-1 shadow-sm mt-1">
+                                                                                <Clock className="w-2.5 h-2.5"/> En validación: {pendingSkills[mov]} LBS
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="flex items-center gap-1 w-24 sm:w-28 bg-white p-1 rounded-xl border border-brand-dark/20 focus-within:border-brand-dark/60 transition-colors shadow-inner shrink-0">
+                                                                        <input type="number" placeholder="0" value={userSkills[mov] !== undefined ? userSkills[mov] : ''} onChange={(e) => handleSkillUpdate(mov, e.target.value)} className="w-full p-2 bg-transparent outline-none font-black text-center text-brand-dark text-lg sm:text-xl" />
+                                                                        <span className="text-[8px] font-black uppercase text-brand-dark/50 pr-2">LBS</span>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                     <button onClick={handleActualizarSkillsClick} disabled={loading} className="w-full mt-6 bg-brand-dark text-brand-bg1 p-4 rounded-xl font-black uppercase text-sm shadow-xl hover:scale-[1.02] transition-transform flex items-center justify-center gap-2">
                                         {loading ? 'Validando Progreso...' : <><Upload className="w-5 h-5"/> Actualizar Mi Progreso</>}
                                     </button>
@@ -1305,7 +1366,7 @@
                                 </div>
                                 {dataLoading ? <div className="text-center py-10 font-bold animate-pulse text-brand-dark/50">Cargando datos...</div> : (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                                        {blogPosts?.map((post, idx) => {
+                                        {[...blogPosts].sort((a, b) => new Date(getProp(b, 'Fecha')) - new Date(getProp(a, 'Fecha'))).map((post, idx) => {
                                             if(!post) return null;
                                             const urlImg = getDirectImageUrl(getProp(post, 'URL_Imagen'));
                                             return (
@@ -1366,8 +1427,12 @@
                                                 <div><label className="block text-[10px] font-black uppercase mb-1 ml-1 text-brand-dark">Hora</label><input type="time" name="Hora" defaultValue={editingEvent ? getProp(editingEvent, 'Hora') : ''} className="w-full p-3 rounded-xl bg-white/60 focus:bg-white outline-none font-bold text-brand-dark shadow-sm" /></div>
                                             </div>
                                             <div><label className="block text-[10px] font-black uppercase mb-1 ml-1 text-brand-dark">Punto de Encuentro</label><input type="text" name="PuntoEncuentro" defaultValue={editingEvent ? getProp(editingEvent, 'Punto de Encuentro') : ''} className="w-full p-3 rounded-xl bg-white/60 focus:bg-white outline-none font-bold text-brand-dark shadow-sm" /></div>
-                                            <div><label className="block text-[10px] font-black uppercase mb-1 ml-1 text-brand-dark">URL de Imagen (Opcional)</label><input type="url" name="URL_Imagen" defaultValue={editingEvent ? getProp(editingEvent, 'URL_Imagen') : ''} placeholder="https://..." className="w-full p-3 rounded-xl bg-white/60 focus:bg-white outline-none font-bold text-brand-dark shadow-sm text-xs" /></div>
-                                            <div><label className="block text-[10px] font-black uppercase mb-1 ml-1 text-brand-dark">Descripción</label><textarea name="Descripcion" defaultValue={editingEvent ? getProp(editingEvent, 'Descripcion') : ''} required rows="4" className="w-full p-3 rounded-xl bg-white/60 focus:bg-white outline-none font-bold text-brand-dark shadow-sm"></textarea></div>
+                                            <div>
+                                                <label className="flex items-center gap-2 text-[10px] font-black uppercase mb-1 ml-1 text-brand-dark cursor-pointer bg-white/60 p-3 rounded-xl shadow-sm border border-brand-dark/10">
+                                                    <input type="checkbox" name="Destacado" value="SI" defaultChecked={editingEvent && getProp(editingEvent, 'Destacado') === 'SI'} className="w-5 h-5 accent-brand-dark" />
+                                                    Mostrar como Pop-up al inicio
+                                                </label>
+                                            </div>
                                             <button type="submit" disabled={loading} className="w-full bg-brand-dark text-brand-bg1 p-4 rounded-xl font-black uppercase shadow-xl hover:scale-105 transition-transform">{loading ? 'Procesando...' : (editingEvent ? 'Guardar Cambios' : 'Publicar Evento')}</button>
                                         </form>
 
